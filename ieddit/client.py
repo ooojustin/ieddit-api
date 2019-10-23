@@ -49,5 +49,5 @@ class Client:
         self.logged_in = True
 
     @_require_login
-    def create_post(self, title, sub, url = "", text = "", nsfw = False):
-        return Post.create(self, title, sub, url, text, nsfw)
+    def create_post(self, title, sub, url = "", text = "", is_nsfw = False, is_anon = False):
+        return Post.create(self, title, sub, url, text, is_nsfw, is_anon)

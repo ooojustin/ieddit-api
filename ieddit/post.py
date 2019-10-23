@@ -6,7 +6,7 @@ import re
 class Post:
 
     @classmethod
-    def create(cls, client, title, sub, url = "", text = "", is_nsfw = False):
+    def create(cls, client, title, sub, url, text, is_nsfw, is_anon):
         
         # send get request and create html parser
         response = client.session.get(utils.IEDDIT("/create_post"))
@@ -27,6 +27,10 @@ class Post:
             params["captcha"] = client._2captcha.solve(base64)
             if not params["captcha"]:
                 raise Exception("failed to solve captcha :(")
+
+        # create post anonymously
+        if is_anon:
+            params["anonymous"] = 1
 
         response = client.session.post(utils.IEDDIT("/create_post"), params)
 
@@ -64,6 +68,7 @@ class Post:
         post.url = url
         post.text = text
         post.is_nsfw = is_nsfw
+        post.is_anon = is_anon
 
         return post
 
