@@ -13,13 +13,13 @@ class Client:
     if not os.path.exists(LOG_DIR):
         os.mkdir(LOG_DIR)
 
-    def __init__(self, username, password, _2captcha_api_key, do_login = True):
+    def __init__(self, username, password, _2captcha_api_key = None, do_login = True):
 
         self.username = username
         self.password = password
         self.logged_in = False
 
-        self._2captcha = _2Captcha(_2captcha_api_key)
+        self._2captcha = _2Captcha(_2captcha_api_key) if _2captcha_api_key else None
 
         self.session = requests.Session()
         self.session.headers.update({"User-Agent": Client.USER_AGENT})
@@ -60,20 +60,21 @@ class Client:
         response = self.session.get(Client.IEDDIT("/create_post"))
         parser = BeautifulSoup(response.text, "html.parser")
 
-        # find base64 captcha data and solve
-        # img = parser.select_one(".captcha-div img")
-        # base64 = img["src"].split()[1]       
-        # answer = self._2captcha.solve(base64)
-        # if not answer:
-        #     raise Exception("failed to solve captcha :(")
-
+        # determine request parameters
         params = {
             "url": url,
             "self_post_text": text,
             "title": title,
             "sub": sub,
-            # "captcha": answer
         }
+
+        # if 2captcha key was provided, find base64 captcha data and solve
+        if self._2captcha:
+            img = parser.select_one(".captcha-div img")
+            base64 = img["src"].split()[1]       
+            params["captcha"] = self._2captcha.solve(base64)
+            if not params["captcha"]:
+                raise Exception("failed to solve captcha :(")
 
         response = self.session.post(Client.IEDDIT("/create_post"), params)
 
