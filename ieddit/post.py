@@ -1,7 +1,7 @@
 from .utils import API
 from bs4 import BeautifulSoup
-from datetime import datetime
-import re
+from dateutil import parser
+import re, json
 
 class Post:
 
@@ -22,21 +22,21 @@ class Post:
 
         # send post request
         response = client.post(API("new_post"), params)     
-        print(response.status_code, response.text)
+        if response.status_code != 200:
+            raise Exception("Invalid status code from API [{}]".format(response.status_code))
             
-        # create post object and set variables
-        # post = cls()
-        # post.id = post_id
-        # post.full_url = post_url
-        # post.client = client
-        # post.title = title
-        # post.sub = sub
-        # post.url = url
-        # post.text = text
-        # post.is_nsfw = is_nsfw
-        # post.is_anon = is_anon
+        # load json response data
+        data = json.loads(response.text)
 
-        # return post
+        # create post object and set variables
+        post = cls()
+        for key, value in data.items():
+            if key == "created":
+                setattr(post, key, parser.parse(value))
+            else:
+                setattr(post, key, value)
+
+        return post
 
     def __init__(self):
         pass
