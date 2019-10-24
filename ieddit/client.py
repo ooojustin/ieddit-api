@@ -22,5 +22,5 @@ class Client:
     def get(self, *args, **kwargs):
         return self.session.get(*args, **kwargs)
 
-    def create_post(self, title, sub, url = "", text = "", anonymous = False):
+    def create_post(self, title, sub, url = None, text = None, anonymous = False):
         return Post.create(self, title, sub, url, text, anonymous)
